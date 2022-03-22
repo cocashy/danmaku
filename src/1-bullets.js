@@ -1,10 +1,8 @@
 class StraitBullet extends Bullet {
-  constructor(args) {
-    super({
-      color: args.color ? args.color : 255
-    });
-    this.width  = 5;
-    this.height = 10;
+  constructor(color) {
+    super();
+    this.color = color;
+    this.radius = 5;
   }
 
   draw() {
@@ -13,7 +11,8 @@ class StraitBullet extends Bullet {
       noStroke();
       translate(this.position.x, this.position.y);
       rotate(this.angle);
-      rect(-this.height/2, -this.width/2, this.height, this.width);
+      ellipseMode(RADIUS);
+      ellipse(0, 0, this.radius*2, this.radius)
     pop();
   }
 }

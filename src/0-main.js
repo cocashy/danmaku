@@ -4,33 +4,28 @@ let game;
 
 function setup() {
   createCanvas(width, height);
-  windowResized();
   game = new Game();
 }
 
 function draw() {
-  background(0);
   game.update();
 }
 
 function windowResized() {
-  const canvas = document.getElementById('defaultCanvas0');
-  const shorter = Math.min(window.innerWidth, window.innerHeight);
-  canvas.style.zoom = shorter / height;
+  game.resize();
 }
 
 class Bullet {
-  constructor(args){
+  constructor(){
     this.position = createVector();
     this.velocity = createVector();
     this.angle = 0;
-    this.color = args.color ? args.color : 255;
   }
 
   update() {
     this.position.add(this.velocity);
     this.draw();
-    return this.collisionField();
+    return this.collisionField() || this.collisionPlayer();
   }
 
   draw() {
@@ -41,6 +36,11 @@ class Bullet {
       this.position.x < width &&
       this.position.y > 0 &&
       this.position.y < height);
+  }
+
+  collisionPlayer() {
+    return false;
+    return detectCollision(this, game.player);
   }
 
   setPosition(position) {
@@ -54,39 +54,50 @@ class Bullet {
 }
 
 class Launcher {
-  constructor(args) {
-    this.position = createVector(args.x, args.y);
+  constructor(x, y) {
+    this.position = createVector(x, y);
     this.velocity = createVector();
     this.bullets = [];
-    this.bulletSpeed = args.bulletSpeed ? args.bulletSpeed : 3;
-    this.bulletColor = args.bulletColor ? args.bulletColor : 255;
     this.angle = 0;
-    this.anglarVelocity = args.anglarVelocity ? args.anglarVelocity : PI/180;
   }
 
   update() {
     this.updateBullets();
-    this.rotate();
   }
 
   updateBullets() {
     this.bullets = this.bullets.filter(bullet => !bullet.update());
   }
+}
 
-  rotate() {
-    this.angle += this.anglarVelocity;
-  }
+function detectCollision(self, target) {
+  const dist0 = dist(
+    self.position.x,
+    self.position.y,
+    target.position.x,
+    target.position.y
+  );
+  const radiusSum = self.radius + target.radius;
+  return dist0 < radiusSum;
 }
 
 class Game {
   constructor() {
+    this.width  = 1000;
+    this.height = 1000;
     this.player = new Player();
     this.enemies = [];
+    this.resize();
 
-    this.enemies.push(new SquareEnemy({ x: 500, y: 100 }));
+    rectMode(CENTER);
+    ellipseMode(RADIUS);
+
+    this.enemies.push(new CircleEnemy(900, 100));
+    this.enemies.push(new CircleEnemy(800, 100));
   }
 
   update() {
+    background(0);
     this.updatePlayer();
     this.updateEnemies();
   }
@@ -97,5 +108,17 @@ class Game {
 
   updateEnemies() {
     this.enemies = this.enemies.filter(enemy => !enemy.update());
+  }
+
+  resize() {
+    const canvas = select("canvas").elt;
+    this.widthScale  = window.innerWidth  / width;
+    this.heightScale = window.innerHeight / height;
+    canvas.style.zoom = Math.min(window.innerWidth, window.innerHeight) / width;
+    if (window.innerWidth < window.innerHeight) {
+      this.heightScale *= canvas.style.zoom;
+    } else {
+      this.widthScale  *= canvas.style.zoom;
+    }
   }
 }
