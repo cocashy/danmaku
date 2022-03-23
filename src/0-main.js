@@ -15,6 +15,8 @@ function windowResized() {
 class Game {
   constructor() {
     createCanvas(1000, 1000);
+    frameRate(60);
+
     this.player = new Player();
     this.enemies = [];
     this.resize();
