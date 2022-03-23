@@ -15,26 +15,24 @@ class Launcher {
   }
 
   detectCollision(target, self=this) {
-    const dist0 = dist(
+    return dist(
       self.position.x,
       self.position.y,
       target.position.x,
       target.position.y
-    );
-    const radiusSum = self.radius + target.radius;
-    return dist0 < radiusSum;
+    ) < self.radius + target.radius;
   }
 }
 
 class Player extends Launcher {
   constructor() {
     super(width/2, height/2);
-    this.color = 255;
-    this.radius = 10;
+    this.color = color(255);
+    this.alphaColor = color(255, 128);
+    this.radius = 30;
     this.maxVelocity = 20;
     this.anglarVelocity = PI/180;
     this.bulletSpeed = 20;
-    this.bulletNumber = 6;
     this.bulletInterval = 10;
     this.coolTime = 0;
   }
@@ -49,8 +47,8 @@ class Player extends Launcher {
 
   launch() {
     if (frameCount % this.bulletInterval === 0) {
-      const times = this.bulletNumber;
-      const range = PI/8;
+      const times = 3;
+      const range = PI/9;
       for (let i = 0; i < times; i++) {
         const bullet = new LinearBullet(this.color);
         const angle = times-1 ? i / (times-1) * range - range/2 : 0;
@@ -66,15 +64,11 @@ class Player extends Launcher {
   }
 
   updateDamage() {
-    if (this.coolTime > 0) {
-      this.coolTime--;
-    }
+    this.coolTime -= (this.coolTime > 0) ? 1 : 0
   }
 
-  addDamage() {
-    if (!this.coolTime > 0) {
-      this.coolTime = 50;
-    }
+  hit() {
+    this.coolTime = !(this.coolTime > 0) ? 50 : this.coolTime;
   }
 
   move() {
@@ -103,8 +97,8 @@ class Player extends Launcher {
       translate(this.position.x, this.position.y);
       push();
         noFill();
-        stroke(255, 128);
-        const scalar = 10 * this.radius;
+        stroke(this.alphaColor);
+        const scalar = 2 * this.radius;
         scale(scalar);
         strokeWeight(2 / scalar);
         rotate(this.angle + PI/6);
@@ -115,10 +109,10 @@ class Player extends Launcher {
         );
       pop();
       push();
-        fill(255);
+        fill(this.color);
         noStroke();
         if (this.coolTime % 3 === 0) {
-          circle(0, 0, 10);
+          circle(0, 0, this.radius);
         }
       pop();
     pop();
@@ -130,45 +124,62 @@ class Enemy extends Launcher {
     super(x, y, args);
     this.color = color(255, 0, 0);
     this.alphaColor = color(255, 0, 0, 128);
+    this.hitPoint = 100;
   }
 
   update() {
     super.update();
-    this.collision();
-    this.bulletCollision();
+    this.collisionBullets();
+    this.collisionBody();
+    return !(this.hitPoint > 0);
   }
 
-  collision() {
-    if (this.detectCollision(game.player)) {
-      game.player.addDamage();
-    }
+  hit() {
+    this.hitPoint--;
   }
 
-  bulletCollision() {
-    this.bullets.filter(bullet => {
-      return this.detectCollision(game.player, bullet);
-    }).map(bullet => {
-      bullet.hit();
-      game.player.addDamage();
+  collisionBullets() {
+    this.bullets.map(ownBullet => {
+      game.player.bullets.filter(playerBullet => {
+        return this.detectCollision(ownBullet, playerBullet);
+      }).map(playerBullet => {
+        ownBullet.hit();
+        playerBullet.hit();
+        return;
+      });
+      if (this.detectCollision(game.player, ownBullet)) {
+        ownBullet.hit();
+        game.player.hit();
+      }
     });
+  }
 
+  collisionBody() {
+    game.player.bullets.filter(playerBullet => {
+      return this.detectCollision(playerBullet);
+    }).map(playerBullet => {
+      this.hit();
+    });
+    if (this.detectCollision(game.player)) {
+      game.player.hit();
+    }
   }
 }
 
 class CircleEnemy extends Enemy {
   constructor(x, y, args) {
     super(x, y, args);
-    this.anglarVelocity = PI/180;
+    this.anglarVelocity = PI/160;
     this.bulletSpeed = 4;
     this.bulletAccel = -0.1;
     this.radius = 50;
   }
 
   update() {
-    super.update();
     this.rotate();
     this.launch();
     this.draw();
+    return super.update();
   }
 
   rotate() {
@@ -177,7 +188,7 @@ class CircleEnemy extends Enemy {
 
   launch() {
     if (frameCount % 30 === 1) {
-      const div = 18;
+      const div = 6;
       for (let i = 0; i < div; i++) {
         const bullet = new AccelBullet(this.color);
         bullet.setPosition(this.position);
@@ -202,7 +213,6 @@ class CircleEnemy extends Enemy {
       rotate(this.angle);
       push();
         noFill();
-        strokeWeight(2);
         push();
           stroke(this.alphaColor);
           square(0, 0, this.radius * Math.sqrt(2));

@@ -9,7 +9,7 @@ class Bullet {
   update() {
     this.position.add(this.velocity);
     this.draw();
-    return (this.hitPoint === 0) || this.collisionField();
+    return !(this.hitPoint > 0) || this.collisionField();
   }
 
   draw() {
@@ -40,16 +40,16 @@ class LinearBullet extends Bullet {
   constructor(color) {
     super();
     this.color = color;
-    this.radius = 5;
+    this.radius = 10;
   }
 
   draw() {
     push();
-      fill(this.color);
-      noStroke();
+      noFill();
+      stroke(this.color);
       translate(this.position.x, this.position.y);
       rotate(this.angle);
-      ellipse(0, 0, this.radius*2, this.radius);
+      circle(0, 0, this.radius);
     pop();
   }
 }
