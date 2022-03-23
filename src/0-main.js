@@ -24,7 +24,7 @@ class Game {
     strokeWeight(3);
 
     this.enemies.push(new CircleEnemy(200, 300));
-    this.enemies.push(new CircleEnemy(800, 300));
+    this.enemies.push(new CircleEnemy(700, 300));
   }
 
   update() {
