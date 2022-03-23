@@ -74,9 +74,9 @@ class Player extends Launcher {
   move() {
     if (mouseIsPressed) {
       this.velocity = createVector(
-        mouseX - this.position.x,
-        mouseY - this.position.y
+        mouseX, mouseY
       )
+      .sub(this.position)
       .limit(this.maxVelocity);
       this.position.add(this.velocity);
     }
@@ -120,11 +120,11 @@ class Player extends Launcher {
 }
 
 class Enemy extends Launcher {
-  constructor(x, y, args) {
-    super(x, y, args);
+  constructor(x, y, hitPoint) {
+    super(x, y);
+    this.hitPoint = hitPoint;
     this.color = color(255, 0, 0);
     this.alphaColor = color(255, 0, 0, 128);
-    this.hitPoint = 100;
   }
 
   update() {
@@ -167,8 +167,8 @@ class Enemy extends Launcher {
 }
 
 class CircleEnemy extends Enemy {
-  constructor(x, y, args) {
-    super(x, y, args);
+  constructor(x, y) {
+    super(x, y, 100);
     this.anglarVelocity = PI/160;
     this.bulletSpeed = 4;
     this.bulletAccel = -0.1;
@@ -190,15 +190,18 @@ class CircleEnemy extends Enemy {
     if (frameCount % 30 === 1) {
       const div = 6;
       for (let i = 0; i < div; i++) {
-        const bullet = new HomingBullet(this.color);
+        const bullet = new AccelBullet(this.color);
         bullet.setPosition(this.position);
         bullet.setVelocity(
           createVector(1, 0)
           .rotate(TWO_PI / div * i + this.angle)
           .mult(this.bulletSpeed)
         );
-        bullet.setTarget(game.player);
-        bullet.setSpeed(this.bulletSpeed);
+        bullet.setAccel(
+          createVector(1, 0)
+          .rotate(TWO_PI / div * i + this.angle)
+          .mult(this.bulletAccel)
+        );
         this.bullets.push(bullet);
       }
     }
@@ -208,22 +211,24 @@ class CircleEnemy extends Enemy {
     push();
       translate(this.position.x, this.position.y);
       rotate(this.angle);
-      push();
-        noFill();
-        push();
-          stroke(this.alphaColor);
-          square(0, 0, this.radius * Math.sqrt(2));
-        pop();
-        push();
-          stroke(this.color);
-          circle(0, 0, this.radius);
-        pop();
-      pop();
-      push();
-        fill(this.color);
-        noStroke();
-        circle(0, 0, 10);
-      pop();
+
+      noFill();
+      stroke(this.alphaColor);
+      square(0, 0, this.radius * Math.sqrt(2));
+
+      stroke(this.color);
+      circle(0, 0, this.radius);
+
+      fill(this.color);
+      noStroke();
+      circle(0, 0, 10);
     pop();
+  }
+}
+
+
+class Slime extends Enemy {
+  constructor() {
+
   }
 }
