@@ -69,3 +69,31 @@ class AccelBullet extends LinearBullet {
     this.accel = accel;
   }
 }
+
+class HomingBullet extends LinearBullet {
+  constructor(color) {
+    super(color);
+  }
+
+  update() {
+    this.setVelocity(
+      this.velocity.add(
+        this.target.position.copy()
+        .sub(this.position)
+        .normalize()
+        .mult(0.1)
+      )
+      .normalize()
+      .mult(this.speed)
+    )
+    return super.update();
+  }
+
+  setTarget(target) {
+    this.target = target;
+  }
+
+  setSpeed(speed) {
+    this.speed = speed;
+  }
+}

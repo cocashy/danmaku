@@ -190,18 +190,15 @@ class CircleEnemy extends Enemy {
     if (frameCount % 30 === 1) {
       const div = 6;
       for (let i = 0; i < div; i++) {
-        const bullet = new AccelBullet(this.color);
+        const bullet = new HomingBullet(this.color);
         bullet.setPosition(this.position);
         bullet.setVelocity(
           createVector(1, 0)
           .rotate(TWO_PI / div * i + this.angle)
           .mult(this.bulletSpeed)
         );
-        bullet.setAccel(
-          createVector(1, 0)
-          .rotate(TWO_PI / div * i + this.angle)
-          .mult(this.bulletAccel)
-        );
+        bullet.setTarget(game.player);
+        bullet.setSpeed(this.bulletSpeed);
         this.bullets.push(bullet);
       }
     }
