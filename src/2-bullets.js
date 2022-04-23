@@ -1,38 +1,15 @@
-class Bullet {
-  constructor(){
-    this.position = createVector();
-    this.velocity = createVector();
-    this.angle = 0;
-    this.hitPoint = 1;
+class Bullet extends Particle {
+  constructor(hitPoint=1){
+    super();
+    this.hitPoint = hitPoint;
   }
 
   update() {
-    this.position.add(this.velocity);
-    this.draw();
-    return !(this.hitPoint > 0) || this.collisionField();
-  }
-
-  draw() {
+    return super.update() || !(this.hitPoint > 0);
   }
 
   hit() {
     this.hitPoint--;
-  }
-
-  collisionField() {
-    return !(this.position.x > 0 &&
-      this.position.x < width &&
-      this.position.y > 0 &&
-      this.position.y < height);
-  }
-
-  setPosition(position) {
-    this.position = createVector(position.x, position.y);
-  }
-
-  setVelocity(velocity) {
-    this.velocity = velocity;
-    this.angle = this.velocity.heading();
   }
 }
 

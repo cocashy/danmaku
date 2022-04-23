@@ -131,7 +131,6 @@ class Enemy extends Launcher {
     super.update();
     this.collisionBullets();
     this.collisionBody();
-    return !(this.hitPoint > 0);
   }
 
   hit() {
@@ -158,7 +157,9 @@ class Enemy extends Launcher {
     game.player.bullets.filter(playerBullet => {
       return this.detectCollision(playerBullet);
     }).map(playerBullet => {
+      playerBullet.hit();
       this.hit();
+      return;
     });
     if (this.detectCollision(game.player)) {
       game.player.hit();
@@ -168,7 +169,7 @@ class Enemy extends Launcher {
 
 class CircleEnemy extends Enemy {
   constructor(x, y) {
-    super(x, y, 100);
+    super(x, y, 10);
     this.anglarVelocity = PI/160;
     this.bulletSpeed = 4;
     this.bulletAccel = -0.1;
@@ -176,10 +177,11 @@ class CircleEnemy extends Enemy {
   }
 
   update() {
+    super.update();
     this.rotate();
     this.launch();
     this.draw();
-    return super.update();
+    return this.hitPoint < 0 ? this.effect() : false;
   }
 
   rotate() {
@@ -223,6 +225,21 @@ class CircleEnemy extends Enemy {
       noStroke();
       circle(0, 0, 10);
     pop();
+  }
+
+  effect() {
+    const div = 12;
+    for (let i = 0; i < div; i++) {
+      const particle = new LinearParticle(this.alphaColor);
+      particle.setPosition(this.position);
+      particle.setVelocity(
+        createVector(1, 0)
+        .rotate(TWO_PI*random())
+        .mult(5)
+      );
+      game.particles.push(particle);
+    }
+    return true;
   }
 }
 
